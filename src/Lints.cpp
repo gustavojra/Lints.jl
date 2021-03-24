@@ -23,9 +23,11 @@ int ncart(int am)
     return ((am >= 0) ? ((((am) + 2) * ((am) + 1)) >> 1) : 0);
 }
 
-
+/* From a String containing a valid libint2 input, returns 
+a vector of libint2 Atom objects */
 std::vector<libint2::Atom> get_atoms(const std::string& inp)
 {
+    // These lines come directly from libint2 manual
     std::ifstream input_file(inp);
     std::vector<libint2::Atom> atoms = libint2::read_dotxyz(input_file);
     return atoms;
@@ -36,18 +38,26 @@ libint2::Engine make_engine(libint2::Operator op, int max_nprim, int max_l)
     return libint2::Engine(op, max_nprim, max_l);
 }
 
+/* struct Atom will be availiable on Julia as `Lints.Atom` 
+the public member functions are accessed directly as `Lints.function`
+NOT as `atom.function` (`atom` being an `Lints.Atom` object). */
 struct Atom
 {
+    // julia> Lints.Atom(Z::Int, x::Float64, z::Float64)
     Atom(int Z, double x, double y, double z) {
         _atom.atomic_number = Z;
         _atom.x = x;
         _atom.y = y;
         _atom.z = z;
     }
+
+    // Create the Atom object from a `libint2::Atom`
     Atom(libint2::Atom& atom) : _atom(atom) {}
 
+    // julia> Lints.Z(atom::Lints.Atom) -> returns atomic number 
     int Z() const { return _atom.atomic_number; }
 
+    // julia> Lints.get_pos(atom::Lints.Atom, x::Float64, y::Float64, z::Float64) -> returns atom XYZ
     auto get_pos() -> jlcxx::Array<double> { 
         jlcxx::Array<double> pos;
         pos.push_back(_atom.x);
@@ -56,6 +66,7 @@ struct Atom
         return pos;
     }
 
+    // julia> Lints.get_pos(atom::Lints.Atom, x::Float64, y::Float64, z::Float64) -> sets atom XYZ
     void set_pos(double x, double y, double z) {
         _atom.x = x;
         _atom.y = y;
@@ -63,6 +74,7 @@ struct Atom
     }
 
 private:
+    // This would be the `field` in julia language. However, it cannot be accessed as it is private
     libint2::Atom _atom;
 };
 

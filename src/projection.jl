@@ -1,4 +1,5 @@
-function projector(source,dest)
+# Produce an overlap matrix between different basisset useful for projections
+function projector(source, dest)
     nprim = maximum((Lints.max_nprim(source),Lints.max_nprim(dest)))
     l = maximum((Lints.max_l(source),Lints.max_l(dest)))
     engine = Lints.OverlapEngine(nprim,l)
